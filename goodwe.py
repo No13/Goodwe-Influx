@@ -61,6 +61,8 @@ def get_inverter_data(hostname,timeout=0.5):
                 'timestamp': time.mktime((2000+get_int(data[5]),get_int(data[6]),get_int(data[7]), get_int(data[8]), get_int(data[9]), get_int(data[10]),-1,-1,-1))
             }
             return(inverter_data)
+        # In case of CRC error; enforce timeout to prevent early retry
+        time.sleep(timeout)
         return {"error": "crc error"}
     except socket.timeout:
         return {"error": "timeout"}
