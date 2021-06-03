@@ -1,5 +1,5 @@
 Docker-compose voorbeeld:
-
+```yaml
   goodwe-influx:
     container_name: goodwe-influx
     image: goodwe-influx
@@ -14,3 +14,4 @@ Docker-compose voorbeeld:
     networks:
       - dmz_docker
     restart: always
+```
