@@ -73,18 +73,20 @@ def fillInflux():
     '''
     global inverter_host, influx_host, influx_user, influx_pass, influx_port, influx_db, influx_tls
     try:
+        retries = 2
         data = get_inverter_data(inverter_host)
-        print("Got data:",data)
-        # Retry once...
-        if(data['error'] != 'no error'):
-            print("Error on first run, retry")
-            data = get_inverter_data(inverter)
+        while (data['error'] != 'no error') and retries > 0:
+            print("Got error:",data,"retries remaining:",retries)
+            retries -= 1
+            data = get_inverter_data(inverter_host)
         if(data['error'] == 'no error'):
-            print("Good data")
             db = InfluxDBClient(influx_host,influx_port,influx_user,influx_pass,influx_db, ssl=influx_tls)
             jso = [ {"measurement": "goodwe", "tags":{"source": "Python" }, "fields": data } ]
             db.write_points(jso)
             db.close()
+            print("Written to db:",data)
+        else:
+            print("No valid data:",data)
     finally:
         Timer(10,fillInflux).start()
 
