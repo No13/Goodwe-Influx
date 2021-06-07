@@ -1,6 +1,9 @@
 import os
 from threading import Timer
-from influxdb_client import InfluxDBClient, Point
+from influxdb_client import InfluxDBClient
+#import influxdb_client
+from influxdb_client.client.write_api import SYNCHRONOUS
+
 from goodwe import Goodwe
 
 def fillInflux():
@@ -16,12 +19,11 @@ def fillInflux():
             retries -= 1
             data = gw.get_inverter_data()
         if(data['error'] == 'no error'):
-            db = InfluxDBClient.from_env_properties()
-            with db.write_api() as write_api:
-                jso = [ {"measurement": "goodwe", "tags":{"source": "Python" }, "fields": data } ]
-                write_api.write(influxdb_bucket, influxdb_org, jso)
-            db.close()
-            print("Written to db:",data)
+            with InfluxDBClient.from_env_properties() as db:
+                with db.write_api(write_options=SYNCHRONOUS) as write_api:
+                    jso = [ {"measurement": "goodwe", "tags":{"source": "Python" }, "fields": data } ]
+                    write_api.write(influxdb_bucket, influxdb_org, jso)
+                print("Written to db:",data)
         else:
             print("No valid data:",data)
     finally:
