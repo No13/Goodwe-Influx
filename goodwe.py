@@ -52,7 +52,7 @@ def get_inverter_data(hostname,timeout=0.5):
                 'iac': round(get_int(data[47:49])*0.1,2),
                 'fac': round(get_int(data[53:55])*0.01,2),
                 'eday': round(get_int(data[93:95])*0.1,2),
-                'etot': round(get_int(data[97:99])*0.1,2),
+                'etot': round(get_int(data[95:99])*0.1,2),
                 'rssi': get_int(data[149:151]),
                 'hours': get_int(data[101:103]),
                 'temp': round(get_int(data[87:89])*0.1,2),
@@ -93,11 +93,12 @@ def fillInflux():
         Timer(10,fillInflux).start()
 
 inverter_host = os.environ['INVERTER_HOST']
-influx_host = os.environ['INFLUX_HOST']
-influx_user = os.environ['INFLUX_USER']
-influx_pass = os.environ['INFLUX_PASS']
-influx_port = int(os.environ['INFLUX_PORT'])
-influx_db = os.environ['INFLUX_DB']
-influx_tls = ("true" in os.environ['INFLUX_TLS']) or ("True" in os.environ['INFLUX_TLS'])
+influx_host = os.environ.get('INFLUX_HOST','localhost')
+influx_user = os.environ.get('INFLUX_USER','')
+influx_pass = os.environ.get('INFLUX_PASS','')
+influx_port = int(os.environ.get('INFLUX_PORT',8086))
+influx_db = os.environ.get('INFLUX_DB','default')
+tls = os.environ.get('INFLUX_TLS','false')
+influx_tls = ("true" in tls) or ("True" in tls)
 
 fillInflux()
