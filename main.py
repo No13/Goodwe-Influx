@@ -31,7 +31,12 @@ def fillInflux():
 def fillDomoticz():
     global gw,domoticz_idx,domoticz_url,domoticz_user,domoticz_pass,domoticz_interval
     try:
+        retries = 2
         data = gw.get_inverter_data()
+        while (data['error'] != 'no error') and retries > 0:
+            print("Got error:",data,"retries remaining:",retries)
+            retries -= 1
+            data = gw.get_inverter_data()
         if data['error'] == 'no error':
             val = []
             val.append(str(data['temp']))
