@@ -1,6 +1,6 @@
 import socket, time, os
 
-class Goodwe:
+class GoodWe:
     def __init__(self, hostname):
         self.hostname = hostname
 
@@ -29,6 +29,17 @@ class Goodwe:
         else:
             return int.from_bytes(in_bytes[:len(in_bytes)],'big')
 
+    def get_info(self,timeout=0.5):
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, 0)
+        s.settimeout(timeout)
+        try:
+            s.sendto(bytes.fromhex('574946494b49542d3231343032382d52454144'),(self.hostname,48899))
+            data,address = s.recvfrom(4096)
+            print(data)
+        except:
+            print('timeout')
+
+    
     def get_inverter_data(self,timeout=0.5):
         '''
         Retrieve and parse data packet from inverter
@@ -39,6 +50,7 @@ class Goodwe:
             s.sendto(bytes.fromhex('7f0375940049d5c2'),(self.hostname,8899))
             data,address = s.recvfrom(4096)
             # do CRC check
+            self.data = data
             crc_data = data[-1:].hex()+data[-2:-1].hex() 
             crc_calc = hex(self.crc16(data[2:-2]))[2:]
             if(crc_data == crc_calc):

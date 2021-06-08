@@ -1,10 +1,9 @@
 import os
 from threading import Timer
 from influxdb_client import InfluxDBClient
-#import influxdb_client
 from influxdb_client.client.write_api import SYNCHRONOUS
-
-from goodwe import Goodwe
+import requests
+from goodwe import GoodWe
 
 def fillInflux():
     '''
@@ -29,9 +28,48 @@ def fillInflux():
     finally:
         Timer(10,fillInflux).start()
 
-inverter_host = os.environ['INVERTER_HOST']
-influxdb_bucket = os.environ['INFLUXDB_V2_BUCKET']
-influxdb_org = os.environ['INFLUXDB_V2_ORG']
-gw = Goodwe(inverter_host)
+def fillDomoticz():
+    global gw,domoticz_idx,domoticz_url,domoticz_user,domoticz_pass,domoticz_interval
+    try:
+        data = gw.get_inverter_data()
+        if data['error'] == 'no error':
+            val = []
+            val.append(str(data['temp']))
+            val.append(str(data['iac']))
+            val.append(str(data['vac']))
+            val.append(str(data['power'])+';'+str(data['etot']*1000))
+            val_index = 0
+            for idx in range(int(domoticz_idx),int(domoticz_idx)+4):
+                url = domoticz_url+'/json.htm?type=command&param=udevice&idx='+str(idx)+'&nvalue=0&svalue='+val[val_index]
+                print(url)
+                resp = requests.get(url,auth=requests.auth.HTTPBasicAuth(domoticz_user,domoticz_pass))
+                print(resp.text)
+                val_index += 1
+    finally:
+        Timer(int(domoticz_interval), fillDomoticz).start()
 
-fillInflux()
+inverter_host = os.environ['INVERTER_HOST']
+influxdb_enabled = True
+try:
+    influxdb_bucket = os.environ['INFLUXDB_V2_BUCKET']
+    influxdb_org = os.environ['INFLUXDB_V2_ORG']
+except:
+    influxdb_enabled = False
+    print("InfluxDB nog complete, disabling")
+    
+domoticz_enabled = True
+try:
+    domoticz_idx = os.environ['DOMO_IDX_START']
+    domoticz_url = os.environ['DOMO_URL']
+    domoticz_user = os.environ['DOMO_USER']
+    domoticz_pass = os.environ['DOMO_PASS']
+    domoticz_interval = os.environ['DOMO_INTERVAL']
+except:
+    domoticz_enabled = False
+    print("Domo not complete, disabling")
+
+gw = GoodWe(inverter_host)
+if influxdb_enabled:
+    fillInflux()
+if domoticz_enabled:
+    fillDomoticz()
