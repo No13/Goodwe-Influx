@@ -39,12 +39,13 @@ def fillDomoticz():
             val.append(str(data['vac']))
             val.append(str(data['power'])+';'+str(data['etot']*1000))
             val_index = 0
+            resp_code = []
             for idx in range(int(domoticz_idx),int(domoticz_idx)+4):
                 url = domoticz_url+'/json.htm?type=command&param=udevice&idx='+str(idx)+'&nvalue=0&svalue='+val[val_index]
-                print(url)
                 resp = requests.get(url,auth=requests.auth.HTTPBasicAuth(domoticz_user,domoticz_pass))
-                print(resp.text)
+                resp_code.append(resp.status_code)
                 val_index += 1
+            print(resp_code)
     finally:
         Timer(int(domoticz_interval), fillDomoticz).start()
 
