@@ -55,7 +55,7 @@ try:
     influxdb_org = os.environ['INFLUXDB_V2_ORG']
 except:
     influxdb_enabled = False
-    print("InfluxDB nog complete, disabling")
+    print("InfluxDB not complete, disabling")
     
 domoticz_enabled = True
 try:
