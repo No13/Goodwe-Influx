@@ -1,3 +1,6 @@
+'''
+Main function for docker container
+'''
 import os
 from threading import Timer
 from influxdb_client import InfluxDBClient
@@ -14,27 +17,31 @@ def fillInflux():
         retries = 2
         data = gw.get_inverter_data()
         while (data['error'] != 'no error') and retries > 0:
-            print("Got error:",data,"retries remaining:",retries)
+            print("Got error:", data, "retries remaining:", retries)
             retries -= 1
             data = gw.get_inverter_data()
-        if(data['error'] == 'no error'):
+        if data['error'] == 'no error':
             with InfluxDBClient.from_env_properties() as db:
                 with db.write_api(write_options=SYNCHRONOUS) as write_api:
-                    jso = [ {"measurement": "goodwe", "tags":{"source": "Python" }, "fields": data } ]
+                    jso = [{"measurement": "goodwe",
+                            "tags":{"source": "Python"}, "fields": data}]
                     write_api.write(influxdb_bucket, influxdb_org, jso)
-                print("Written to db:",data)
+                print("Written to db:", data)
         else:
-            print("No valid data:",data)
+            print("No valid data:", data)
     finally:
-        Timer(10,fillInflux).start()
+        Timer(10, fillInflux).start()
 
 def fillDomoticz():
-    global gw,domoticz_idx,domoticz_url,domoticz_user,domoticz_pass,domoticz_interval
+    '''
+    Retrieve stats and insert into domoticz
+    '''
+    global gw, domoticz_idx, domoticz_url, domoticz_user, domoticz_pass, domoticz_interval
     try:
         retries = 2
         data = gw.get_inverter_data()
         while (data['error'] != 'no error') and retries > 0:
-            print("Got error:",data,"retries remaining:",retries)
+            print("Got error:", data, "retries remaining:", retries)
             retries -= 1
             data = gw.get_inverter_data()
         if data['error'] == 'no error':
@@ -45,9 +52,11 @@ def fillDomoticz():
             val.append(str(data['power'])+';'+str(data['etot']*1000))
             val_index = 0
             resp_code = []
-            for idx in range(int(domoticz_idx),int(domoticz_idx)+4):
-                url = domoticz_url+'/json.htm?type=command&param=udevice&idx='+str(idx)+'&nvalue=0&svalue='+val[val_index]
-                resp = requests.get(url,auth=requests.auth.HTTPBasicAuth(domoticz_user,domoticz_pass))
+            for idx in range(int(domoticz_idx), int(domoticz_idx)+4):
+                url = domoticz_url+'/json.htm?type=command&param=udevice&idx='
+                url += str(idx)+'&nvalue=0&svalue='+val[val_index]
+                resp = requests.get(url,
+                                    auth=requests.auth.HTTPBasicAuth(domoticz_user, domoticz_pass))
                 resp_code.append(resp.status_code)
                 val_index += 1
             print(resp_code)
@@ -62,7 +71,7 @@ try:
 except:
     influxdb_enabled = False
     print("InfluxDB not complete, disabling")
-    
+
 domoticz_enabled = True
 try:
     domoticz_idx = os.environ['DOMO_IDX_START']
