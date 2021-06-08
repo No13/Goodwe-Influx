@@ -1,6 +1,8 @@
 import socket, time, os
 
 class GoodWe:
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, 0)
+
     def __init__(self, hostname):
         self.hostname = hostname
 
@@ -30,11 +32,10 @@ class GoodWe:
             return int.from_bytes(in_bytes[:len(in_bytes)],'big')
 
     def get_info(self,timeout=0.5):
-        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, 0)
-        s.settimeout(timeout)
+        self.s.settimeout(timeout)
         try:
-            s.sendto(bytes.fromhex('574946494b49542d3231343032382d52454144'),(self.hostname,48899))
-            data,address = s.recvfrom(4096)
+            self.s.sendto(bytes.fromhex('574946494b49542d3231343032382d52454144'),(self.hostname,48899))
+            data,address = self.s.recvfrom(4096)
             print(data)
         except:
             print('timeout')
@@ -44,11 +45,10 @@ class GoodWe:
         '''
         Retrieve and parse data packet from inverter
         '''
-        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, 0)
-        s.settimeout(timeout)
+        self.s.settimeout(timeout)
         try:
-            s.sendto(bytes.fromhex('7f0375940049d5c2'),(self.hostname,8899))
-            data,address = s.recvfrom(4096)
+            self.s.sendto(bytes.fromhex('7f0375940049d5c2'),(self.hostname,8899))
+            data,address = self.s.recvfrom(4096)
             # do CRC check
             self.data = data
             crc_data = data[-1:].hex()+data[-2:-1].hex() 
