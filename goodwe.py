@@ -24,8 +24,8 @@ class GoodWe:
         data = bytearray(data)
         poly = 0xA001
         crc = 0xFFFF
-        for b in data:
-            crc ^= (0xFF & b)
+        for data_byte in data:
+            crc ^= (0xFF & data_byte)
             for _ in range(0, 8):
                 if crc & 0x0001:
                     crc = ((crc >> 1) & 0xFFFF) ^ poly
@@ -39,8 +39,7 @@ class GoodWe:
         '''
         if type(in_bytes) is int:
             return in_bytes
-        else:
-            return int.from_bytes(in_bytes[:len(in_bytes)], 'big')
+        return int.from_bytes(in_bytes[:len(in_bytes)], 'big')
 
     def get_info(self, timeout=0.5):
         '''
@@ -96,5 +95,5 @@ class GoodWe:
             return {"error": "crc error"}
         except socket.timeout:
             return {"error": "timeout"}
-        except Exception as e:
-            return {"error":str(e)}
+        except Exception as error_msg:
+            return {"error":str(error_msg)}
