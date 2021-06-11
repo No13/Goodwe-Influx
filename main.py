@@ -17,41 +17,6 @@ GW = None
 INFLUXDB_BUCKET = ''
 INFLUXDB_ORG = ''
 
-def main():
-    '''
-    Retrieve info and start timers
-    '''
-    global DOMO_URL, DOMO_IDX, DOMO_USER, DOMO_PASS, DOMO_INTERVAL
-    global GW, INFLUXDB_BUCKET, INFLUXDB_ORG
-    inverter_host = os.environ['INVERTER_HOST']
-    influxdb_enabled = True
-    try:
-        INFLUXDB_BUCKET = os.environ['INFLUXDB_V2_BUCKET']
-        INFLUXDB_ORG = os.environ['INFLUXDB_V2_ORG']
-    except:
-        influxdb_enabled = False
-        print("InfluxDB not complete, disabling")
-
-    domoticz_enabled = True
-    try:
-        DOMO_IDX = os.environ['DOMO_IDX_START']
-        DOMO_URL = os.environ['DOMO_URL']
-        DOMO_USER = os.environ['DOMO_USER']
-        DOMO_PASS = os.environ['DOMO_PASS']
-        DOMO_INTERVAL = os.environ['DOMO_INTERVAL']
-    except:
-        domoticz_enabled = False
-        print("Domo not complete, disabling")
-
-    GW = GoodWe(inverter_host)
-    if influxdb_enabled:
-        fill_influx()
-    if domoticz_enabled:
-        fill_domoticz()
-
-if __name__ == '__main__':
-    main()
-
 def fill_influx():
     '''
     Retrieve stats and insert into influx
@@ -107,3 +72,38 @@ def fill_domoticz():
             print(resp_code)
     finally:
         Timer(int(DOMO_INTERVAL), fill_domoticz).start()
+
+def main():
+    '''
+    Retrieve info and start timers
+    '''
+    global DOMO_URL, DOMO_IDX, DOMO_USER, DOMO_PASS, DOMO_INTERVAL
+    global GW, INFLUXDB_BUCKET, INFLUXDB_ORG
+    inverter_host = os.environ['INVERTER_HOST']
+    influxdb_enabled = True
+    try:
+        INFLUXDB_BUCKET = os.environ['INFLUXDB_V2_BUCKET']
+        INFLUXDB_ORG = os.environ['INFLUXDB_V2_ORG']
+    except:
+        influxdb_enabled = False
+        print("InfluxDB not complete, disabling")
+
+    domoticz_enabled = True
+    try:
+        DOMO_IDX = os.environ['DOMO_IDX_START']
+        DOMO_URL = os.environ['DOMO_URL']
+        DOMO_USER = os.environ['DOMO_USER']
+        DOMO_PASS = os.environ['DOMO_PASS']
+        DOMO_INTERVAL = os.environ['DOMO_INTERVAL']
+    except:
+        domoticz_enabled = False
+        print("Domo not complete, disabling")
+
+    GW = GoodWe(inverter_host)
+    if influxdb_enabled:
+        fill_influx()
+    if domoticz_enabled:
+        fill_domoticz()
+
+if __name__ == '__main__':
+    main()
