@@ -1,1 +1,1 @@
-docker build . -t goodwe-influx
+docker build . -t hub.frotmail.nl/goodwe-influx
